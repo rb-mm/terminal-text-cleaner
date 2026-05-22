@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Terminal Text Cleaner | Chasing Next</title>
 <meta name="description" content="Free tool that cleans up text copied from a terminal: rejoins lines chopped mid-sentence and rebuilds numbered and bulleted lists. Runs entirely in your browser.">
-<link rel="canonical" href="https://chasingnext.com/tools/terminal-text-cleaner/">
+<link rel="canonical" href="https://chasingnext.com/tools/terminal-text-cleaner">
 <meta property="og:title" content="Terminal Text Cleaner">
 <meta property="og:description" content="Paste text copied from a terminal and turn messy formatting clean. Rejoins wrapped lines, rebuilds lists, copies as rich text. Runs entirely in your browser.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://chasingnext.com/tools/terminal-text-cleaner/">
+<meta property="og:url" content="https://chasingnext.com/tools/terminal-text-cleaner">
 <meta property="og:image" content="https://chasingnext.com/tools/terminal-text-cleaner/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://chasingnext.com/tools/terminal-text-cleaner/og-image.png">
@@ -242,6 +242,11 @@
   const isListItem = s => /^(\d+[.)]|[-*•])\s/.test(s.trim());
   const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+  // Strip a leading quote-gutter marker: the vertical bar terminals draw
+  // down the left of quoted/blockquoted output (Claude Code uses ▎). Without
+  // this the marker gets stranded mid-sentence when wrapped lines rejoin.
+  const stripGutter = s => s.replace(/^\s*(?:[▏▎▍▌│┃]\s?)+/, '');
+
   // Step 1: collapse terminal-wrapped lines back into logical lines.
   // Every line glues onto the one above it unless it's blank or starts a
   // new list item. Blank lines are kept (collapsed) as paragraph breaks.
@@ -249,7 +254,7 @@
     const raw = text.split(/\r\n|\r|\n/);
     let out = [];
     for (const line of raw) {
-      const s = line.trim().replace(/ {2,}/g, ' ');
+      const s = stripGutter(line).trim().replace(/ {2,}/g, ' ');
       if (s === '') {
         if (out.length && out[out.length - 1] !== '') out.push('');
         continue;
